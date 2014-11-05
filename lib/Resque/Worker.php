@@ -159,6 +159,7 @@ class Resque_Worker
 
 		while(true) {
 			if($this->shutdown) {
+				$this->log('Work loop received shutdown notification');
 				break;
 			}
 
@@ -222,6 +223,7 @@ class Resque_Worker
 			$this->doneWorking();
 		}
 
+		$this->log('Calling unregister method');
 		$this->unregisterWorker();
 	}
 
@@ -354,7 +356,7 @@ class Resque_Worker
 		declare(ticks = 1);
 		pcntl_signal(SIGTERM, array($this, 'shutDownNow'));
 		pcntl_signal(SIGINT, array($this, 'shutDownNow'));
-		pcntl_signal(SIGQUIT, array($this, 'shutdown'));
+		pcntl_signal(SIGQUIT, array($this, 'quitShutdown'));
 		pcntl_signal(SIGUSR1, array($this, 'killChild'));
 		pcntl_signal(SIGUSR2, array($this, 'pauseProcessing'));
 		pcntl_signal(SIGCONT, array($this, 'unPauseProcessing'));
@@ -389,6 +391,16 @@ class Resque_Worker
 	{
 		$this->log('SIGPIPE received; attempting to reconnect');
 		Resque::redis()->establishConnection();
+	}
+
+	/**
+	 * Signal handler for SIGQUIT, gracefully shuts down the worker by allowing 
+	 * the current job or work loop to finish, then de-registering the worker 
+	 * and quitting.
+	 */
+	public function quitShutdown() {
+		$this->log('QUIT received');
+		$this->shutdown();
 	}
 
 	/**
@@ -488,6 +500,7 @@ class Resque_Worker
 	 */
 	public function unregisterWorker()
 	{
+		$this->log('Unregistering worker');
 		if(is_object($this->currentJob)) {
 			$this->currentJob->fail(new Resque_Job_DirtyExitException);
 		}
