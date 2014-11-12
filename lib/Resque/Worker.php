@@ -234,6 +234,7 @@ class Resque_Worker
 	 */
 	public function perform(Resque_Job $job)
 	{
+		register_shutdown_function(array($this, 'shutdownFunction'), $job);
 		try {
 			Resque_Event::trigger('afterFork', $job);
 			$job->perform();
@@ -246,6 +247,24 @@ class Resque_Worker
 
 		$job->updateStatus(Resque_Job_Status::STATUS_COMPLETE);
 		$this->log('done ' . $job);
+	}
+
+	/**
+	 * Shutdown function which captures output from PHP errors which result in failed 
+	 * execution of a job.
+	 *
+	 * @param Resque_Job $job The job which failed
+	 */
+	public function shutdownFunction(Resque_Job $job) {
+		$error = error_get_last();
+		if ($error !== null && ($error['type'] & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED)) {
+			$message = $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line'];
+			$this->log($job . ' failed: ' . $message);
+			$job->fail(new Resque_Job_DirtyExitException($message));
+
+			// Avoid a DirtyExit exception in the parent process
+			exit(0);
+		}
 	}
 
 	/**
