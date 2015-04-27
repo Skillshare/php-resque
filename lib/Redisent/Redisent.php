@@ -101,8 +101,13 @@ class Redisent {
                 $size = substr($reply, 1);
                 do {
                     $block_size = ($size - $read) > 1024 ? 1024 : ($size - $read);
-                    $response .= fread($this->__sock, $block_size);
-                    $read += $block_size;
+                    $r = fread($this->__sock, $block_size);
+                    if ($r === false) {
+                        throw new \Exception('Failed to read response from stream');
+                    } else {
+                        $response .= $r;
+                        $read += strlen($r);
+                    }
                 } while ($read < $size);
                 fread($this->__sock, 2); /* discard crlf */
                 break;
@@ -124,8 +129,13 @@ class Redisent {
                         $block = "";
                         do {
                             $block_size = ($size - $read) > 1024 ? 1024 : ($size - $read);
-                            $block .= fread($this->__sock, $block_size);
-                            $read += $block_size;
+                            $r = fread($this->__sock, $block_size);
+                            if ($r === false) {
+                                throw new \Exception('Failed to read response from stream');
+                            } else {
+                                $block .= $r;
+                                $read += strlen($r);
+                            }
                         } while ($read < $size);
                         fread($this->__sock, 2); /* discard crlf */
                         $response[] = $block;
