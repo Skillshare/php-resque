@@ -106,7 +106,7 @@ class Redisent {
                         throw new \Exception('Failed to read response from stream');
                     } else {
                         $response .= $r;
-                        $read += strlen($r);
+                        $read += mb_strlen($r, '8bit');
                     }
                 } while ($read < $size);
                 fread($this->__sock, 2); /* discard crlf */
@@ -134,7 +134,7 @@ class Redisent {
                                 throw new \Exception('Failed to read response from stream');
                             } else {
                                 $block .= $r;
-                                $read += strlen($r);
+                                $read += mb_strlen($r, '8bit');
                             }
                         } while ($read < $size);
                         fread($this->__sock, 2); /* discard crlf */
