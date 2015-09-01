@@ -12,7 +12,7 @@ require_once dirname(__FILE__) . '/Resque/Exception.php';
 class Resque
 {
 	const VERSION = '1.2.2';
-	const LOG_DIRECTORY = '/var/log/skillshare/php-resque';
+	const LOG_DIRECTORY = '/tmp/php-resque';
 
 	/**
 	 * @var Resque_Redis Instance of Resque_Redis that talks to redis.
