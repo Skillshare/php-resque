@@ -99,6 +99,10 @@ class Redisent {
                 }
                 $read = 0;
                 $size = substr($reply, 1);
+                if ($size === '0') {
+                    $response = '';
+                    break;
+                }
                 do {
                     $block_size = ($size - $read) > 1024 ? 1024 : ($size - $read);
                     $r = fread($this->__sock, $block_size);
@@ -123,8 +127,9 @@ class Redisent {
                     $size = substr($bulk_head, 1);
                     if ($size == '-1') {
                         $response[] = null;
-                    }
-                    else {
+                    } else if ($size === '0') {
+                        $response[] = '';
+                    } else {
                         $read = 0;
                         $block = "";
                         do {
