@@ -101,6 +101,7 @@ class Redisent {
                 $size = substr($reply, 1);
                 if ($size === '0') {
                     $response = '';
+                    fread($this->__sock, 2); /* discard crlf */
                     break;
                 }
                 do {
@@ -129,6 +130,7 @@ class Redisent {
                         $response[] = null;
                     } else if ($size === '0') {
                         $response[] = '';
+                        fread($this->__sock, 2); /* discard crlf */
                     } else {
                         $read = 0;
                         $block = "";
