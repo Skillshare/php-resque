@@ -12,6 +12,7 @@ require_once dirname(__FILE__) . '/Resque/Exception.php';
 class Resque
 {
 	const VERSION = '1.2.2';
+	const LOG_DIRECTORY = '/var/log/skillshare/php-resque';
 
 	/**
 	 * @var Resque_Redis Instance of Resque_Redis that talks to redis.
@@ -103,6 +104,25 @@ class Resque
 	 */
 	public static function push($queue, $item)
 	{
+		$encodedItem = json_encode($item);
+
+		// If this item did not jive with `json_encode` for some reason...
+		if ($encodedItem === false) {
+			// Ensure the logging directory exists
+			@mkdir(self::LOG_DIRECTORY, 0755, true);
+
+			// Construct a formatted log entry
+			$now = gmdate("Y-m-d\TH:i:sO"); // ISO8601
+			$text = print_r($item, true);
+			$data = "[$now]\t$text" . PHP_EOL;
+
+			// Log the contents of `$item` and skip this job
+			$filename = self::LOG_DIRECTORY . '/push-json-encode-error.log';
+			$flags = FILE_APPEND | LOCK_EX;
+
+			return file_put_contents($filename, $data, $flags);
+		}
+
 		self::redis()->sadd('queues', $queue);
 		self::redis()->rpush('queue:' . $queue, json_encode($item));
 	}
