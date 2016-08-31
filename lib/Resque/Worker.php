@@ -175,7 +175,7 @@ class Resque_Worker
 					break;
 				}
 				// If no job was found, we sleep for $interval before continuing and checking again
-				$this->log('Sleeping for ' . $interval, true);
+				// $this->log('Sleeping for ' . $interval, true);
 				if($this->paused) {
 					$this->updateProcLine('Paused');
 				}
@@ -279,7 +279,7 @@ class Resque_Worker
 			return;
 		}
 		foreach($queues as $queue) {
-			$this->log('Checking ' . $queue, self::LOG_VERBOSE);
+			// $this->log('Checking ' . $queue, self::LOG_VERBOSE);
 			$job = Resque_Job::reserve($queue);
 			if($job) {
 				$this->log('Found job on ' . $queue, self::LOG_VERBOSE);
