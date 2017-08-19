@@ -175,6 +175,7 @@ class Resque
 				'class' => $class,
 				'args'  => $args,
 				'queue' => $queue,
+				'id'	=> $result,
 			));
 		}
 

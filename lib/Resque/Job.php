@@ -156,10 +156,11 @@ class Resque_Job
 			);
 		}
 
-		$this->instance = new $this->payload['class']();
+		$queue = $this->queue;
+		$this->instance = new $this->payload['class']($queue, $this->payload);
 		$this->instance->job = $this;
 		$this->instance->args = $this->getArguments();
-		$this->instance->queue = $this->queue;
+		$this->instance->queue = $queue;
 		return $this->instance;
 	}
 
